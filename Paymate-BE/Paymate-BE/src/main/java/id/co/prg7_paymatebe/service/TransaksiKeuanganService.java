@@ -13,7 +13,9 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -149,11 +151,22 @@ public class TransaksiKeuanganService {
         return true;
     }
 
-    public List<RekapLaporan> getRekapLaporanByPengguna(Integer idPengguna) {
-        return mTransaksiKeuanganJpaRepository.findRekapLaporanByPengguna(idPengguna);
+    public List<RekapLaporan> getRekapLaporanByPengguna(Integer id_pengguna) {
+        return mTransaksiKeuanganJpaRepository.findRekapLaporanByPengguna(id_pengguna);
     }
 
     public RekapLaporan getRekapLaporanByPenggunaAndPeriode(Integer idPengguna, String periode) {
         return mTransaksiKeuanganJpaRepository.findRekapLaporanByPenggunaAndPeriode(idPengguna, periode);
+    }
+    public Map<String, Object> getSummaryByMonthYear(int bulan, int tahun) {
+        Object[] result = mTransaksiKeuanganJpaRepository.getTotalPemasukanPengeluaran(bulan, tahun);
+        Double totalPemasukan = result[0] != null ? ((Number) result[0]).doubleValue() : 0.0;
+        Double totalPengeluaran = result[1] != null ? ((Number) result[1]).doubleValue() : 0.0;
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("totalPemasukan", totalPemasukan);
+        data.put("totalPengeluaran", totalPengeluaran);
+        data.put("saldoBersih", totalPemasukan - totalPengeluaran);
+        return data;
     }
 }

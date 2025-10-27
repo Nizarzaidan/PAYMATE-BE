@@ -22,6 +22,8 @@ public class Tagihan {
 
     @Column(name = "nominal", nullable = false)
     private BigDecimal nominal;
+    @Column(name = "catatan", nullable = false)
+    private String catatan;
 
     @Column(name = "tanggal_jatuh_tempo", nullable = false)
     private LocalDate tanggalJatuhTempo;
@@ -38,13 +40,14 @@ public class Tagihan {
     public Tagihan() {
     }
 
-    public Tagihan(Integer idTagihan, Pengguna pengguna, String namaTagihan, BigDecimal nominal,
+    public Tagihan(Integer idTagihan, Pengguna pengguna, String namaTagihan, BigDecimal nominal,String catatan,
                    LocalDate tanggalJatuhTempo, String tipePerulangan, LocalDateTime terakhirDikirim,
                    String status) {
         this.idTagihan = idTagihan;
         this.pengguna = pengguna;
         this.namaTagihan = namaTagihan;
         this.nominal = nominal;
+        this.catatan = catatan;
         this.tanggalJatuhTempo = tanggalJatuhTempo;
         this.tipePerulangan = tipePerulangan;
         this.terakhirDikirim = terakhirDikirim;
@@ -62,6 +65,15 @@ public class Tagihan {
     public void setNominal(BigDecimal nominal) { this.nominal = nominal; }
     public LocalDate getTanggalJatuhTempo() { return tanggalJatuhTempo; }
     public void setTanggalJatuhTempo(LocalDate tanggalJatuhTempo) { this.tanggalJatuhTempo = tanggalJatuhTempo; }
+
+    public String getCatatan() {
+        return catatan;
+    }
+
+    public void setCatatan(String catatan) {
+        this.catatan = catatan;
+    }
+
     public String getTipePerulangan() { return tipePerulangan; }
     public void setTipePerulangan(String tipePerulangan) { this.tipePerulangan = tipePerulangan; }
     public LocalDateTime getTerakhirDikirim() { return terakhirDikirim; }

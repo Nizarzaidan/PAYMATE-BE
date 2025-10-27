@@ -5,4 +5,5 @@ public interface RekapLaporan {
     String getPeriodeBulan();
     Double getTotalPemasukan();
     Double getTotalPengeluaran();
+
 }

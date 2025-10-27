@@ -22,6 +22,18 @@ public class TargetTabungan {
     @Column(name = "target_nominal", nullable = false)
     private BigDecimal targetNominal;
 
+    @Column(name = "nominal_sekarang")
+    private BigDecimal nominalSekarang = BigDecimal.ZERO;
+
+    @Column(name = "mata_uang")
+    private String mataUang = "IDR";
+
+    @Column(name = "frekuensi_pengisian")
+    private String frekuensiPengisian; // harian, mingguan, bulanan
+
+    @Column(name = "nominal_pengisian")
+    private BigDecimal nominalPengisian;
+
     @Column(name = "tanggal_mulai", nullable = false)
     private LocalDate tanggalMulai;
 
@@ -34,37 +46,69 @@ public class TargetTabungan {
     @Column(name = "catatan")
     private String catatan;
 
+    @Column(name = "foto_tabungan")
+    private String fotoTabungan;
+
     public TargetTabungan() {
     }
 
     public TargetTabungan(Integer idTarget, Pengguna pengguna, String namaTarget,
-                          BigDecimal targetNominal, LocalDate tanggalMulai,
-                          LocalDate tanggalSelesai, String status, String catatan) {
+                          BigDecimal targetNominal, BigDecimal nominalSekarang,
+                          String mataUang, String frekuensiPengisian, BigDecimal nominalPengisian,
+                          LocalDate tanggalMulai, LocalDate tanggalSelesai,
+                          String status, String catatan, String fotoTabungan) {
         this.idTarget = idTarget;
         this.pengguna = pengguna;
         this.namaTarget = namaTarget;
         this.targetNominal = targetNominal;
+        this.nominalSekarang = nominalSekarang;
+        this.mataUang = mataUang;
+        this.frekuensiPengisian = frekuensiPengisian;
+        this.nominalPengisian = nominalPengisian;
         this.tanggalMulai = tanggalMulai;
         this.tanggalSelesai = tanggalSelesai;
         this.status = status;
         this.catatan = catatan;
+        this.fotoTabungan = fotoTabungan;
     }
 
     // Getters and Setters
     public Integer getIdTarget() { return idTarget; }
     public void setIdTarget(Integer idTarget) { this.idTarget = idTarget; }
+
     public Pengguna getPengguna() { return pengguna; }
     public void setPengguna(Pengguna pengguna) { this.pengguna = pengguna; }
+
     public String getNamaTarget() { return namaTarget; }
     public void setNamaTarget(String namaTarget) { this.namaTarget = namaTarget; }
+
     public BigDecimal getTargetNominal() { return targetNominal; }
     public void setTargetNominal(BigDecimal targetNominal) { this.targetNominal = targetNominal; }
+
+    public BigDecimal getNominalSekarang() { return nominalSekarang; }
+    public void setNominalSekarang(BigDecimal nominalSekarang) { this.nominalSekarang = nominalSekarang; }
+
+    public String getMataUang() { return mataUang; }
+    public void setMataUang(String mataUang) { this.mataUang = mataUang; }
+
+    public String getFrekuensiPengisian() { return frekuensiPengisian; }
+    public void setFrekuensiPengisian(String frekuensiPengisian) { this.frekuensiPengisian = frekuensiPengisian; }
+
+    public BigDecimal getNominalPengisian() { return nominalPengisian; }
+    public void setNominalPengisian(BigDecimal nominalPengisian) { this.nominalPengisian = nominalPengisian; }
+
     public LocalDate getTanggalMulai() { return tanggalMulai; }
     public void setTanggalMulai(LocalDate tanggalMulai) { this.tanggalMulai = tanggalMulai; }
+
     public LocalDate getTanggalSelesai() { return tanggalSelesai; }
     public void setTanggalSelesai(LocalDate tanggalSelesai) { this.tanggalSelesai = tanggalSelesai; }
+
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
     public String getCatatan() { return catatan; }
     public void setCatatan(String catatan) { this.catatan = catatan; }
+
+    public String getFotoTabungan() { return fotoTabungan; }
+    public void setFotoTabungan(String fotoTabungan) { this.fotoTabungan = fotoTabungan; }
 }

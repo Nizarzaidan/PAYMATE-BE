@@ -1,5 +1,6 @@
 package id.co.prg7_paymatebe.controller;
 
+import id.co.prg7_paymatebe.repository.TransaksiKeuanganJpaRepository;
 import id.co.prg7_paymatebe.service.TransaksiKeuanganService;
 import id.co.prg7_paymatebe.vo.TransaksiKeuangan;
 import id.co.prg7_paymatebe.vo.RekapLaporan;
@@ -121,14 +122,16 @@ public class TransaksiKeuanganController {
                 : ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new Result(404, "Data laporan tidak ditemukan untuk periode " + periode));
     }
+    @GetMapping("/bulan-tahun")
+    public ResponseEntity<Map<String, Object>> getBulanTahun() {
+        List<Integer> tahunList = TransaksiKeuanganJpaRepository.findDistinctTahun();
+        List<Integer> bulanList = TransaksiKeuanganJpaRepository.findDistinctBulan();
 
-    // ✅ Tambahan endpoint untuk total pemasukan/pengeluaran (menggunakan sumByTipe)
-//    @GetMapping("/sum/{tipe}")
-//    public ResponseEntity<Map<String, Object>> getTotalByTipe(@PathVariable String tipe) {
-//        BigDecimal total = transaksiService.sumByTipe(tipe);
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("tipe", tipe);
-//        response.put("total", total);
-//        return ResponseEntity.ok(response);
-//    }
+        Map<String, Object> response = new HashMap<>();
+        response.put("tahun", tahunList);
+        response.put("bulan", bulanList);
+
+        return ResponseEntity.ok(response);
+    }
+
 }

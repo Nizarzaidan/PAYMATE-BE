@@ -52,6 +52,7 @@ public class TagihanService {
             System.out.println("Pengguna: " + (tagihan.getPengguna() != null ? tagihan.getPengguna().getIdPengguna() : "NULL"));
             System.out.println("Nama Tagihan: " + tagihan.getNamaTagihan());
             System.out.println("Nominal: " + tagihan.getNominal());
+            System.out.println("Catatan: " + tagihan.getCatatan());
 
             // Validasi pengguna
             if (tagihan.getPengguna() == null || tagihan.getPengguna().getIdPengguna() == null) {

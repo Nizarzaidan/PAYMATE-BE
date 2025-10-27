@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
@@ -41,6 +42,22 @@ public class TargetTabunganController {
         return mTargetTabunganService.getTargetTabungansByStatus(idPengguna, status);
     }
 
+    @GetMapping("/pengguna/{idPengguna}/aktif")
+    public List<TargetTabungan> getTargetAktifByPengguna(@PathVariable Integer idPengguna) {
+        return mTargetTabunganService.getTargetAktifByPengguna(idPengguna);
+    }
+
+    @GetMapping("/pengguna/{idPengguna}/total")
+    public ResponseEntity<Result> getTotalTabunganByPengguna(@PathVariable Integer idPengguna) {
+        try {
+            BigDecimal total = mTargetTabunganService.getTotalTabunganByPengguna(idPengguna);
+            return ResponseEntity.ok(new Result(200, "Total tabungan berhasil diambil", total));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new Result(500, "Gagal mengambil total tabungan: " + e.getMessage()));
+        }
+    }
+
     @PostMapping
     public ResponseEntity<Result> saveTargetTabungan(@RequestBody TargetTabungan targetTabunganParam) {
         try {
@@ -59,6 +76,34 @@ public class TargetTabunganController {
 
         if (isSuccess) {
             return ResponseEntity.ok(new Result(200, "Target Tabungan berhasil diupdate"));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new Result(404, "Target Tabungan tidak ditemukan"));
+        }
+    }
+
+    @PutMapping("/{id}/tambah")
+    public ResponseEntity<Result> tambahNominalTabungan(
+            @PathVariable Integer id,
+            @RequestParam BigDecimal nominal) {
+        boolean isSuccess = mTargetTabunganService.tambahNominalTabungan(id, nominal);
+
+        if (isSuccess) {
+            return ResponseEntity.ok(new Result(200, "Nominal tabungan berhasil ditambahkan"));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new Result(404, "Target Tabungan tidak ditemukan"));
+        }
+    }
+
+    @PutMapping("/{id}/kurangi")
+    public ResponseEntity<Result> kurangiNominalTabungan(
+            @PathVariable Integer id,
+            @RequestParam BigDecimal nominal) {
+        boolean isSuccess = mTargetTabunganService.kurangiNominalTabungan(id, nominal);
+
+        if (isSuccess) {
+            return ResponseEntity.ok(new Result(200, "Nominal tabungan berhasil dikurangi"));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new Result(404, "Target Tabungan tidak ditemukan"));
@@ -89,4 +134,20 @@ public class TargetTabunganController {
                     .body(new Result(404, "Target Tabungan tidak ditemukan"));
         }
     }
+
+    @PutMapping("/{id}/foto")
+    public ResponseEntity<Result> updateFotoTabungan(
+            @PathVariable Integer id,
+            @RequestParam String fotoPath) {
+        TargetTabungan target = mTargetTabunganService.getTargetTabungan(id);
+        if (target != null) {
+            target.setFotoTabungan(fotoPath);
+            mTargetTabunganService.updateTargetTabungan(target);
+            return ResponseEntity.ok(new Result(200, "Foto tabungan berhasil diupdate"));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new Result(404, "Target Tabungan tidak ditemukan"));
+        }
+    }
 }
+
