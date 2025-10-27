@@ -2,9 +2,11 @@ package id.co.prg7_paymatebe.service;
 
 import id.co.prg7_paymatebe.repository.AkunJpaRepository;
 import id.co.prg7_paymatebe.repository.TransaksiKeuanganJpaRepository;
+import id.co.prg7_paymatebe.repository.KategoriTransaksiJpaRepository;
 import id.co.prg7_paymatebe.vo.TransaksiKeuangan;
 import id.co.prg7_paymatebe.vo.RekapLaporan;
 import id.co.prg7_paymatebe.vo.AkunKeuangan;
+import id.co.prg7_paymatebe.vo.KategoriTransaksi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,9 @@ public class TransaksiKeuanganService {
 
     @Autowired
     private AkunJpaRepository akunJpaRepository;
+
+    @Autowired
+    private KategoriTransaksiJpaRepository kategoriTransaksiJpaRepository;
 
     public TransaksiKeuangan getTransaksiKeuangan(Long id) {
         return mTransaksiKeuanganJpaRepository.findById(id).orElse(null);
@@ -65,50 +70,70 @@ public class TransaksiKeuanganService {
     public TransaksiKeuangan saveTransaksiKeuangan(TransaksiKeuangan transaksi) throws IOException {
         System.out.println(">>> Saving Transaksi Keuangan: " + transaksi);
 
+        // Set timestamp
         transaksi.setDibuatPada(LocalDateTime.now());
         transaksi.setDiperbaruiPada(LocalDateTime.now());
 
+        // Validasi akun
         AkunKeuangan akun = transaksi.getAkun();
-
-        // ✅ Pastikan akun tidak null
-        if (akun == null) {
-            throw new IOException("Transaksi harus memiliki akun keuangan terkait!");
+        if (akun == null || akun.getIdAkun() == null) {
+            throw new IOException("Akun keuangan harus dipilih!");
         }
 
-        // ✅ Jika akun punya ID, ambil ulang dari DB untuk menghindari transient/null field
-        if (akun.getIdAkun() != null) {
-            Optional<AkunKeuangan> akunDbOpt = akunJpaRepository.findById(akun.getIdAkun());
-            if (akunDbOpt.isPresent()) {
-                akun = akunDbOpt.get();
-                transaksi.setAkun(akun);
-            } else {
-                throw new IOException("AkunKeuangan dengan ID " + akun.getIdAkun() + " tidak ditemukan di database!");
-            }
-        } else {
-            // ✅ Jika akun baru, pastikan namaAkun wajib diisi
-            if (!StringUtils.hasText(akun.getNamaAkun())) {
-                throw new IOException("Field 'namaAkun' wajib diisi untuk akun baru!");
-            }
-            if (akun.getPengguna() == null) {
-                throw new IOException("Field 'pengguna' wajib diisi untuk akun baru!");
-            }
+        // Validasi kategori
+        KategoriTransaksi kategori = transaksi.getKategori();
+        if (kategori == null || kategori.getIdKategori() == null) {
+            throw new IOException("Kategori transaksi harus dipilih!");
         }
 
-        // ✅ Simpan transaksi dulu
-        TransaksiKeuangan saved = mTransaksiKeuanganJpaRepository.save(transaksi);
+        // Ambil akun dari database
+        Optional<AkunKeuangan> akunDbOpt = akunJpaRepository.findById(akun.getIdAkun());
+        if (!akunDbOpt.isPresent()) {
+            throw new IOException("Akun dengan ID " + akun.getIdAkun() + " tidak ditemukan!");
+        }
+        akun = akunDbOpt.get();
+        transaksi.setAkun(akun);
 
-        // ✅ Update saldo akun
-        BigDecimal saldoLama = akun.getSaldo() != null ? akun.getSaldo() : BigDecimal.ZERO;
+        // Ambil kategori dari database
+        Optional<KategoriTransaksi> kategoriDbOpt = kategoriTransaksiJpaRepository.findById(kategori.getIdKategori());
+        if (!kategoriDbOpt.isPresent()) {
+            throw new IOException("Kategori dengan ID " + kategori.getIdKategori() + " tidak ditemukan!");
+        }
+        kategori = kategoriDbOpt.get();
+        transaksi.setKategori(kategori);
+
+        // Validasi tipe transaksi sesuai dengan kategori
+        if (!transaksi.getTipeTransaksi().equalsIgnoreCase(kategori.getTipeKategori())) {
+            throw new IOException("Tipe transaksi " + transaksi.getTipeTransaksi() +
+                    " tidak sesuai dengan kategori " + kategori.getTipeKategori());
+        }
+
+        // Validasi nominal
+        if (transaksi.getNominal() == null || transaksi.getNominal().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IOException("Nominal harus lebih dari 0!");
+        }
+
+        // Simpan transaksi
+        TransaksiKeuangan savedTransaksi = mTransaksiKeuanganJpaRepository.save(transaksi);
+
+        // Update saldo akun
+        updateSaldoAkun(akun, transaksi);
+
+        return savedTransaksi;
+    }
+
+    private void updateSaldoAkun(AkunKeuangan akun, TransaksiKeuangan transaksi) {
+        BigDecimal saldoSekarang = akun.getSaldo() != null ? akun.getSaldo() : BigDecimal.ZERO;
+        BigDecimal nominal = transaksi.getNominal();
+
         if ("pemasukan".equalsIgnoreCase(transaksi.getTipeTransaksi())) {
-            akun.setSaldo(saldoLama.add(transaksi.getNominal()));
+            akun.setSaldo(saldoSekarang.add(nominal));
         } else if ("pengeluaran".equalsIgnoreCase(transaksi.getTipeTransaksi())) {
-            akun.setSaldo(saldoLama.subtract(transaksi.getNominal()));
+            akun.setSaldo(saldoSekarang.subtract(nominal));
         }
 
         akun.setDiperbaruiPada(LocalDateTime.now());
         akunJpaRepository.save(akun);
-
-        return saved;
     }
 
     public boolean updateTransaksiKeuangan(TransaksiKeuangan transaksiKeuangan) {

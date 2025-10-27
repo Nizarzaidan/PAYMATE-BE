@@ -37,10 +37,13 @@ public class TagihanService {
     }
 
     // -----------------------------
-    // 🔹 Ambil Tagihan Aktif berdasarkan Pengguna
+    // 🔹 Ambil Tagihan berdasarkan Status
     // -----------------------------
-    public List<Tagihan> getTagihansAktifByPengguna(Integer idPengguna) {
-        return mTagihanJpaRepository.findByPenggunaIdPenggunaAndStatusOrderByTanggalJatuhTempoAsc(idPengguna, "aktif");
+    public List<Tagihan> getTagihansByStatus(Integer idPengguna, String status) {
+        if (status.equalsIgnoreCase("all")) {
+            return mTagihanJpaRepository.findByPenggunaIdPenggunaOrderByIdTagihanAsc(idPengguna);
+        }
+        return mTagihanJpaRepository.findByPenggunaIdPenggunaAndStatusOrderByTanggalJatuhTempoAsc(idPengguna, status);
     }
 
     // -----------------------------
@@ -65,18 +68,19 @@ public class TagihanService {
 
             tagihan.setPengguna(penggunaOpt.get());
 
-            // 🔹 Normalisasi status dan tipe perulangan agar sesuai constraint DB
+            // 🔹 Default status "Belum Lunas"
             if (!StringUtils.hasLength(tagihan.getStatus())) {
-                tagihan.setStatus("aktif");
+                tagihan.setStatus("Belum Lunas");
             } else {
-                String statusLower = tagihan.getStatus().trim().toLowerCase();
-                if (statusLower.equals("aktif") || statusLower.equals("selesai") || statusLower.equals("terlewat")) {
-                    tagihan.setStatus(statusLower);
+                String status = tagihan.getStatus().trim();
+                if (status.equalsIgnoreCase("Lunas") || status.equalsIgnoreCase("Belum Lunas")) {
+                    tagihan.setStatus(status);
                 } else {
-                    tagihan.setStatus("aktif");
+                    tagihan.setStatus("Belum Lunas");
                 }
             }
 
+            // 🔹 Normalisasi tipe perulangan
             if (StringUtils.hasLength(tagihan.getTipePerulangan())) {
                 String tipe = tagihan.getTipePerulangan().trim().toLowerCase();
                 switch (tipe) {
@@ -144,11 +148,11 @@ public class TagihanService {
             }
 
             if (StringUtils.hasLength(tagihan.getStatus())) {
-                String statusLower = tagihan.getStatus().trim().toLowerCase();
-                if (statusLower.equals("selesai") || statusLower.equals("terlewat") || statusLower.equals("aktif")) {
-                    result.setStatus(statusLower);
+                String status = tagihan.getStatus().trim();
+                if (status.equalsIgnoreCase("Lunas") || status.equalsIgnoreCase("Belum Lunas")) {
+                    result.setStatus(status);
                 } else {
-                    result.setStatus("aktif");
+                    result.setStatus("Belum Lunas");
                 }
             }
 

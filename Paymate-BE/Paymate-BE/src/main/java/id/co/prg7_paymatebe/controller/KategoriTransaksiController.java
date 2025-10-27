@@ -2,6 +2,7 @@ package id.co.prg7_paymatebe.controller;
 
 import id.co.prg7_paymatebe.service.KategoriTransaksiService;
 import id.co.prg7_paymatebe.vo.KategoriTransaksi;
+import id.co.prg7_paymatebe.vo.Pengguna;
 import id.co.prg7_paymatebe.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ public class KategoriTransaksiController {
     @Autowired
     private KategoriTransaksiService mKategoriTransaksiService;
 
+    // Endpoint yang sudah ada...
     @GetMapping("/{id}")
     public ResponseEntity<?> getKategoriTransaksi(@PathVariable Integer id) {
         KategoriTransaksi kategori = mKategoriTransaksiService.getKategoriTransaksi(id);
@@ -74,6 +76,23 @@ public class KategoriTransaksiController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new Result(404, "Kategori Transaksi tidak ditemukan"));
+        }
+    }
+
+    // Endpoint baru untuk initialize default categories
+    @PostMapping("/initialize-default/{idPengguna}")
+    public ResponseEntity<Result> initializeDefaultCategories(@PathVariable Integer idPengguna) {
+        try {
+            // Buat object pengguna dummy untuk inisialisasi
+            Pengguna pengguna = new Pengguna();
+            pengguna.setIdPengguna(idPengguna);
+
+            mKategoriTransaksiService.createDefaultCategories(pengguna);
+            return ResponseEntity.ok(new Result(200, "Kategori default berhasil diinisialisasi"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new Result(500, "Gagal menginisialisasi kategori default: " + e.getMessage()));
         }
     }
 }
