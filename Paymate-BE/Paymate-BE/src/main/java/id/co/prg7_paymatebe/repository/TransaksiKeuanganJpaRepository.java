@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Repository("TransaksiKeuanganJpaRepository")
 public interface TransaksiKeuanganJpaRepository extends JpaRepository<TransaksiKeuangan, Long> {
@@ -36,12 +35,6 @@ public interface TransaksiKeuanganJpaRepository extends JpaRepository<TransaksiK
             @Param("idPengguna") Integer idPengguna,
             @Param("month") Integer month,
             @Param("year") Integer year);
-
-    @Query("SELECT SUM(CASE WHEN t.tipeTransaksi = 'pemasukan' THEN t.nominal ELSE 0 END) AS totalPemasukan, " +
-            "SUM(CASE WHEN t.tipeTransaksi = 'pengeluaran' THEN t.nominal ELSE 0 END) AS totalPengeluaran " +
-            "FROM TransaksiKeuangan t " +
-            "WHERE FUNCTION('MONTH', t.tanggalTransaksi) = :bulan AND FUNCTION('YEAR', t.tanggalTransaksi) = :tahun")
-    Object[] getTotalPemasukanPengeluaran(@Param("bulan") int bulan, @Param("tahun") int tahun);
 
     // ✅ Query untuk rekap laporan berdasarkan ID pengguna
     @Query(value =
@@ -77,19 +70,4 @@ public interface TransaksiKeuanganJpaRepository extends JpaRepository<TransaksiK
     // ✅ Tambahan: total berdasarkan tipe + pengguna
     @Query("SELECT COALESCE(SUM(t.nominal), 0) FROM TransaksiKeuangan t WHERE LOWER(t.tipeTransaksi) = LOWER(:tipe) AND t.pengguna.idPengguna = :idPengguna")
     BigDecimal sumByTipeAndPengguna(@Param("tipe") String tipe, @Param("idPengguna") Integer idPengguna);
-
-    @Query("SELECT DISTINCT YEAR(t.tanggalTransaksi) FROM TransaksiKeuangan t ORDER BY YEAR(t.tanggalTransaksi) DESC")
-    static List<Integer> findDistinctTahun() {
-        return null;
-    }
-
-    @Query("SELECT DISTINCT MONTH(t.tanggalTransaksi) FROM TransaksiKeuangan t ORDER BY MONTH(t.tanggalTransaksi)")
-    static List<Integer> findDistinctBulan() {
-        return null;
-    }
-
-    @Query("SELECT DISTINCT MONTH(t.tanggalTransaksi) AS bulan, YEAR(t.tanggalTransaksi) AS tahun FROM TransaksiKeuangan t ORDER BY tahun DESC, bulan DESC")
-    List<Map<String, Object>> findDistinctMonthsAndYears();
-
-
 }

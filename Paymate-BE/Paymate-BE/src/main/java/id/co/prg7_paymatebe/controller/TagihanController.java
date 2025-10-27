@@ -34,9 +34,9 @@ public class TagihanController {
         return mTagihanService.getTagihansByPengguna(idPengguna);
     }
 
-    @GetMapping("/pengguna/{idPengguna}/aktif")
-    public List<Tagihan> getTagihansAktifByPengguna(@PathVariable Integer idPengguna) {
-        return mTagihanService.getTagihansAktifByPengguna(idPengguna);
+    @GetMapping("/pengguna/{idPengguna}/status/{status}")
+    public List<Tagihan> getTagihansByStatus(@PathVariable Integer idPengguna, @PathVariable String status) {
+        return mTagihanService.getTagihansByStatus(idPengguna, status);
     }
 
     @PostMapping
@@ -79,7 +79,7 @@ public class TagihanController {
     public ResponseEntity<Result> bayarTagihan(@PathVariable Integer id) {
         Tagihan tagihan = mTagihanService.getTagihan(id);
         if (tagihan != null) {
-            tagihan.setStatus("selesai");
+            tagihan.setStatus("Lunas");
             tagihan.setTerakhirDikirim(java.time.LocalDateTime.now());
             mTagihanService.updateTagihan(tagihan);
             return ResponseEntity.ok(new Result(200, "Tagihan berhasil dibayar"));

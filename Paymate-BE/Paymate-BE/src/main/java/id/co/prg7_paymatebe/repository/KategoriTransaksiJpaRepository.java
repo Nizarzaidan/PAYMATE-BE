@@ -11,4 +11,7 @@ public interface KategoriTransaksiJpaRepository extends JpaRepository<KategoriTr
     List<KategoriTransaksi> findByPenggunaIdPenggunaAndTipeKategoriAndStatusTrueOrderByNamaKategoriAsc(Integer idPengguna, String tipeKategori);
     List<KategoriTransaksi> findByIndukIsNullAndStatusTrue();
     List<KategoriTransaksi> findByIndukIdKategoriAndStatusTrue(Integer idInduk);
+
+    // Tambahan method untuk mendapatkan kategori by tipe
+    List<KategoriTransaksi> findByTipeKategoriAndStatusTrueOrderByNamaKategoriAsc(String tipeKategori);
 }

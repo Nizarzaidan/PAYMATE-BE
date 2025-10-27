@@ -25,6 +25,9 @@ public class Tagihan {
     @Column(name = "catatan", nullable = false)
     private String catatan;
 
+    @Column(name = "catatan", nullable = false)
+    private String catatan;
+
     @Column(name = "tanggal_jatuh_tempo", nullable = false)
     private LocalDate tanggalJatuhTempo;
 
@@ -35,7 +38,7 @@ public class Tagihan {
     private LocalDateTime terakhirDikirim;
 
     @Column(name = "status")
-    private String status = "Aktif";
+    private String status = "Belum Lunas"; // Default status
 
     public Tagihan() {
     }

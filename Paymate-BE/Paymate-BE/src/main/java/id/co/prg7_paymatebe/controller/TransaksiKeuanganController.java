@@ -1,8 +1,9 @@
 package id.co.prg7_paymatebe.controller;
 
-import id.co.prg7_paymatebe.repository.TransaksiKeuanganJpaRepository;
 import id.co.prg7_paymatebe.service.TransaksiKeuanganService;
+import id.co.prg7_paymatebe.repository.KategoriTransaksiJpaRepository;
 import id.co.prg7_paymatebe.vo.TransaksiKeuangan;
+import id.co.prg7_paymatebe.vo.KategoriTransaksi;
 import id.co.prg7_paymatebe.vo.RekapLaporan;
 import id.co.prg7_paymatebe.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,11 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -25,12 +23,15 @@ public class TransaksiKeuanganController {
     @Autowired
     private TransaksiKeuanganService transaksiService;
 
+    @Autowired
+    private KategoriTransaksiJpaRepository kategoriTransaksiJpaRepository;
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getTransaksiKeuangan(@PathVariable Long id) {
         TransaksiKeuangan transaksi = transaksiService.getTransaksiKeuangan(id);
         return transaksi != null
                 ? ResponseEntity.ok(transaksi)
-                 : ResponseEntity.status(HttpStatus.NOT_FOUND)
+                : ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new Result(404, "Transaksi keuangan tidak ditemukan"));
     }
 
@@ -106,7 +107,15 @@ public class TransaksiKeuanganController {
                 .body(new Result(404, "Transaksi keuangan tidak ditemukan"));
     }
 
-    // ✅ Rekap laporan per pengguna
+    // Endpoint untuk mendapatkan kategori berdasarkan tipe
+    @GetMapping("/kategori/tipe/{tipeKategori}")
+    public ResponseEntity<List<KategoriTransaksi>> getKategoriByTipe(@PathVariable String tipeKategori) {
+        List<KategoriTransaksi> kategori = kategoriTransaksiJpaRepository
+                .findByTipeKategoriAndStatusTrueOrderByNamaKategoriAsc(tipeKategori);
+        return ResponseEntity.ok(kategori);
+    }
+
+    // Rekap laporan
     @GetMapping("/pengguna/{idPengguna}/laporan/rekap")
     public ResponseEntity<List<RekapLaporan>> getRekapLaporan(@PathVariable Integer idPengguna) {
         return ResponseEntity.ok(transaksiService.getRekapLaporanByPengguna(idPengguna));
@@ -122,16 +131,4 @@ public class TransaksiKeuanganController {
                 : ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new Result(404, "Data laporan tidak ditemukan untuk periode " + periode));
     }
-    @GetMapping("/bulan-tahun")
-    public ResponseEntity<Map<String, Object>> getBulanTahun() {
-        List<Integer> tahunList = TransaksiKeuanganJpaRepository.findDistinctTahun();
-        List<Integer> bulanList = TransaksiKeuanganJpaRepository.findDistinctBulan();
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("tahun", tahunList);
-        response.put("bulan", bulanList);
-
-        return ResponseEntity.ok(response);
-    }
-
 }
