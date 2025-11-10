@@ -10,11 +10,18 @@ import java.util.Optional;
 @Repository("PenggunaJpaRepository")
 public interface PenggunaJpaRepository extends JpaRepository<Pengguna, Integer> {
 
+    // Method untuk get pengguna by ID (custom)
     Pengguna getByIdPengguna(Integer idPengguna);
 
+    // Method untuk get all pengguna sorted by ID
     List<Pengguna> findAllByOrderByIdPenggunaAsc();
 
+    // Method untuk find by email
     Optional<Pengguna> findByEmail(String email);
 
+    // Method untuk cek email exists
     boolean existsByEmail(String email);
+
+    // Method untuk leaderboard (optional - untuk fitur lanjutan)
+    List<Pengguna> findAllByOrderByPoinDesc();
 }

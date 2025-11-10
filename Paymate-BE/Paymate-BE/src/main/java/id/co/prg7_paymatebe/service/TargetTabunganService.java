@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -15,6 +16,9 @@ public class TargetTabunganService {
     @Qualifier("TargetTabunganJpaRepository")
     @Autowired
     private TargetTabunganJpaRepository mTargetTabunganJpaRepository;
+
+    @Autowired
+    private RewardGamificationService rewardGamificationService;
 
     public TargetTabungan getTargetTabungan(Integer id) {
         return mTargetTabunganJpaRepository.findById(id).orElse(null);
@@ -35,7 +39,6 @@ public class TargetTabunganService {
     public TargetTabungan saveTargetTabungan(TargetTabungan targetTabungan) {
         System.out.println(">>> Saving Target Tabungan: " + targetTabungan);
 
-        // Set default values jika null
         if (targetTabungan.getNominalSekarang() == null) {
             targetTabungan.setNominalSekarang(BigDecimal.ZERO);
         }
@@ -52,6 +55,8 @@ public class TargetTabunganService {
     public boolean updateTargetTabungan(TargetTabungan targetTabungan) {
         TargetTabungan result = mTargetTabunganJpaRepository.findById(targetTabungan.getIdTarget()).orElse(null);
         if (result == null) return false;
+
+        String statusLama = result.getStatus();
 
         if (StringUtils.hasLength(targetTabungan.getNamaTarget())) {
             result.setNamaTarget(targetTabungan.getNamaTarget());
@@ -88,13 +93,23 @@ public class TargetTabunganService {
         }
 
         mTargetTabunganJpaRepository.save(result);
+
+        // REWARD: Jika status berubah dari "berjalan" ke "selesai", tambah poin
+        if (!"selesai".equals(statusLama) && "selesai".equals(result.getStatus())) {
+            Integer idPengguna = result.getPengguna().getIdPengguna();
+            rewardGamificationService.tambahPoinDariTabungan(idPengguna);
+            System.out.println("✅ Poin ditambahkan untuk user ID: " + idPengguna);
+        }
+
         return true;
     }
 
+    @Transactional
     public boolean tambahNominalTabungan(Integer idTarget, BigDecimal nominal) {
         TargetTabungan target = mTargetTabunganJpaRepository.findById(idTarget).orElse(null);
         if (target == null) return false;
 
+        String statusLama = target.getStatus();
         BigDecimal nominalSekarang = target.getNominalSekarang().add(nominal);
         target.setNominalSekarang(nominalSekarang);
 
@@ -104,6 +119,14 @@ public class TargetTabunganService {
         }
 
         mTargetTabunganJpaRepository.save(target);
+
+        // REWARD: Jika status berubah jadi "selesai", tambah poin
+        if (!"selesai".equals(statusLama) && "selesai".equals(target.getStatus())) {
+            Integer idPengguna = target.getPengguna().getIdPengguna();
+            rewardGamificationService.tambahPoinDariTabungan(idPengguna);
+            System.out.println("✅ Poin ditambahkan untuk user ID: " + idPengguna);
+        }
+
         return true;
     }
 
@@ -117,7 +140,6 @@ public class TargetTabunganService {
         }
         target.setNominalSekarang(nominalSekarang);
 
-        // Jika nominal berkurang, status kembali ke berjalan
         if (nominalSekarang.compareTo(target.getTargetNominal()) < 0) {
             target.setStatus("berjalan");
         }

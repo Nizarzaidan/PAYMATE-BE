@@ -26,47 +26,53 @@ public class Pengguna {
     @Column(name = "tanggal_daftar")
     private LocalDateTime tanggalDaftar;
 
-    @Column(name = "zona_waktu")
-    private String zonaWaktu;
-
     @Column(name = "peran")
     private String peran = "user";
 
     @Column(name = "status_aktif")
     private Boolean statusAktif = true;
 
-    @Column(name = "mata_uang")
-    private String mataUang = "IDR";
-
-    @Column(name = "bahasa")
-    private String bahasa = "id";
-
     @Column(name = "foto_profil")
     private String fotoProfil;
 
-    @Column(name = "preferensi_notifikasi")
-    private String preferensiNotifikasi;
+    @Column(name = "nama_panggilan")
+    private String namaPanggilan;
+
+    @Column(name = "jenis_kelamin")
+    private String jenisKelamin;
+
+    @Column(name = "tanggal_lahir")
+    private LocalDateTime tanggalLahir;
+
+    // ===== REWARD FIELDS - BARU =====
+    @Column(name = "poin")
+    private Integer poin = 0;
+
+    @Column(name = "medali")
+    private Integer medali = 0;
+    // ================================
 
     public Pengguna() {
     }
 
     public Pengguna(Integer idPengguna, String email, String kataSandiHash, String namaLengkap,
-                    String telepon, LocalDateTime tanggalDaftar, String zonaWaktu, String peran,
-                    Boolean statusAktif, String mataUang, String bahasa, String fotoProfil,
-                    String preferensiNotifikasi) {
+                    String telepon, LocalDateTime tanggalDaftar, String peran,
+                    Boolean statusAktif, String fotoProfil, String namaPanggilan,
+                    String jenisKelamin, LocalDateTime tanggalLahir, Integer poin, Integer medali) {
         this.idPengguna = idPengguna;
         this.email = email;
         this.kataSandiHash = kataSandiHash;
         this.namaLengkap = namaLengkap;
         this.telepon = telepon;
         this.tanggalDaftar = tanggalDaftar;
-        this.zonaWaktu = zonaWaktu;
         this.peran = peran;
         this.statusAktif = statusAktif;
-        this.mataUang = mataUang;
-        this.bahasa = bahasa;
         this.fotoProfil = fotoProfil;
-        this.preferensiNotifikasi = preferensiNotifikasi;
+        this.namaPanggilan = namaPanggilan;
+        this.jenisKelamin = jenisKelamin;
+        this.tanggalLahir = tanggalLahir;
+        this.poin = poin;
+        this.medali = medali;
     }
 
     // Getters and Setters
@@ -118,14 +124,6 @@ public class Pengguna {
         this.tanggalDaftar = tanggalDaftar;
     }
 
-    public String getZonaWaktu() {
-        return zonaWaktu;
-    }
-
-    public void setZonaWaktu(String zonaWaktu) {
-        this.zonaWaktu = zonaWaktu;
-    }
-
     public String getPeran() {
         return peran;
     }
@@ -142,22 +140,6 @@ public class Pengguna {
         this.statusAktif = statusAktif;
     }
 
-    public String getMataUang() {
-        return mataUang;
-    }
-
-    public void setMataUang(String mataUang) {
-        this.mataUang = mataUang;
-    }
-
-    public String getBahasa() {
-        return bahasa;
-    }
-
-    public void setBahasa(String bahasa) {
-        this.bahasa = bahasa;
-    }
-
     public String getFotoProfil() {
         return fotoProfil;
     }
@@ -166,11 +148,56 @@ public class Pengguna {
         this.fotoProfil = fotoProfil;
     }
 
-    public String getPreferensiNotifikasi() {
-        return preferensiNotifikasi;
+    public String getNamaPanggilan() {
+        return namaPanggilan;
     }
 
-    public void setPreferensiNotifikasi(String preferensiNotifikasi) {
-        this.preferensiNotifikasi = preferensiNotifikasi;
+    public void setNamaPanggilan(String namaPanggilan) {
+        this.namaPanggilan = namaPanggilan;
+    }
+
+    public String getJenisKelamin() {
+        return jenisKelamin;
+    }
+
+    public void setJenisKelamin(String jenisKelamin) {
+        this.jenisKelamin = jenisKelamin;
+    }
+
+    public LocalDateTime getTanggalLahir() {
+        return tanggalLahir;
+    }
+
+    public void setTanggalLahir(LocalDateTime tanggalLahir) {
+        this.tanggalLahir = tanggalLahir;
+    }
+
+    // ===== REWARD GETTERS & SETTERS - BARU =====
+    public Integer getPoin() {
+        return poin != null ? poin : 0;
+    }
+
+    public void setPoin(Integer poin) {
+        this.poin = poin;
+    }
+
+    public Integer getMedali() {
+        return medali != null ? medali : 0;
+    }
+
+    public void setMedali(Integer medali) {
+        this.medali = medali;
+    }
+    // ============================================
+
+    @Override
+    public String toString() {
+        return "Pengguna{" +
+                "idPengguna=" + idPengguna +
+                ", email='" + email + '\'' +
+                ", namaLengkap='" + namaLengkap + '\'' +
+                ", poin=" + poin +
+                ", medali=" + medali +
+                '}';
     }
 }

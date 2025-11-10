@@ -41,12 +41,16 @@ public class PenggunaService {
         if (pengguna.getStatusAktif() == null) {
             pengguna.setStatusAktif(true);
         }
-        if (!StringUtils.hasLength(pengguna.getMataUang())) {
-            pengguna.setMataUang("IDR");
+
+        // ===== REWARD: Inisialisasi poin & medali untuk user baru =====
+        if (pengguna.getPoin() == null) {
+            pengguna.setPoin(0);
         }
-        if (!StringUtils.hasLength(pengguna.getBahasa())) {
-            pengguna.setBahasa("id");
+        if (pengguna.getMedali() == null) {
+            pengguna.setMedali(0);
         }
+        System.out.println(">>> User baru dengan poin: " + pengguna.getPoin() + ", medali: " + pengguna.getMedali());
+        // ==============================================================
 
         return mPenggunaJpaRepository.save(pengguna);
     }
@@ -71,27 +75,33 @@ public class PenggunaService {
         if (StringUtils.hasLength(pengguna.getTelepon())){
             result.setTelepon(pengguna.getTelepon());
         }
-        if (pengguna.getZonaWaktu() != null){
-            result.setZonaWaktu(pengguna.getZonaWaktu());
-        }
         if (StringUtils.hasLength(pengguna.getPeran())){
             result.setPeran(pengguna.getPeran());
         }
         if (pengguna.getStatusAktif() != null){
             result.setStatusAktif(pengguna.getStatusAktif());
         }
-        if (StringUtils.hasLength(pengguna.getMataUang())){
-            result.setMataUang(pengguna.getMataUang());
-        }
-        if (StringUtils.hasLength(pengguna.getBahasa())){
-            result.setBahasa(pengguna.getBahasa());
-        }
-        if (pengguna.getFotoProfil() != null){
+        if (StringUtils.hasLength(pengguna.getFotoProfil())){
             result.setFotoProfil(pengguna.getFotoProfil());
         }
-        if (pengguna.getPreferensiNotifikasi() != null){
-            result.setPreferensiNotifikasi(pengguna.getPreferensiNotifikasi());
+        if (StringUtils.hasLength(pengguna.getNamaPanggilan())){
+            result.setNamaPanggilan(pengguna.getNamaPanggilan());
         }
+        if (StringUtils.hasLength(pengguna.getJenisKelamin())){
+            result.setJenisKelamin(pengguna.getJenisKelamin());
+        }
+        if (pengguna.getTanggalLahir() != null){
+            result.setTanggalLahir(pengguna.getTanggalLahir());
+        }
+
+        // ===== REWARD: Update poin & medali jika ada =====
+        if (pengguna.getPoin() != null){
+            result.setPoin(pengguna.getPoin());
+        }
+        if (pengguna.getMedali() != null){
+            result.setMedali(pengguna.getMedali());
+        }
+        // ================================================
 
         mPenggunaJpaRepository.save(result);
         return true;
@@ -131,5 +141,29 @@ public class PenggunaService {
     // Cek apakah email sudah terdaftar
     public boolean existsByEmail(String email) {
         return mPenggunaJpaRepository.existsByEmail(email);
+    }
+
+    //buat Login
+    public Pengguna login(String email, String kataSandiHash) {
+        System.out.println(">>> Login request: email=" + email + ", kataSandi=" + kataSandiHash);
+
+        Pengguna pengguna = mPenggunaJpaRepository.findByEmail(email).orElse(null);
+
+        if (pengguna == null) {
+            System.out.println(">>> Tidak ditemukan pengguna dengan email: " + email);
+            return null;
+        }
+
+        System.out.println(">>> Data DB: email=" + pengguna.getEmail() + ", hash=" + pengguna.getKataSandiHash());
+        System.out.println(">>> Poin: " + pengguna.getPoin() + ", Medali: " + pengguna.getMedali());
+
+        // Kalau kamu simpan password dalam plain text (bukan hash)
+        if (pengguna.getKataSandiHash() != null && pengguna.getKataSandiHash().equals(kataSandiHash)) {
+            System.out.println(">>> Password cocok!");
+            return pengguna;
+        }
+
+        System.out.println(">>> Password tidak cocok!");
+        return null;
     }
 }
