@@ -70,4 +70,9 @@ public interface TransaksiKeuanganJpaRepository extends JpaRepository<TransaksiK
     // ✅ Tambahan: total berdasarkan tipe + pengguna
     @Query("SELECT COALESCE(SUM(t.nominal), 0) FROM TransaksiKeuangan t WHERE LOWER(t.tipeTransaksi) = LOWER(:tipe) AND t.pengguna.idPengguna = :idPengguna")
     BigDecimal sumByTipeAndPengguna(@Param("tipe") String tipe, @Param("idPengguna") Integer idPengguna);
+
+    @Query("SELECT COUNT(DISTINCT t.pengguna) FROM TransaksiKeuangan t")
+    Long countDistinctPengguna();
+    @Query("SELECT COALESCE(SUM(t.nominal), 0) FROM TransaksiKeuangan t WHERE t.tipeTransaksi = 'pemasukan'")
+    Double getTotalUangMasuk();
 }

@@ -8,7 +8,6 @@ import id.co.prg7_paymatebe.vo.RekapLaporan;
 import id.co.prg7_paymatebe.vo.AkunKeuangan;
 import id.co.prg7_paymatebe.vo.KategoriTransaksi;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -16,14 +15,12 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TransaksiKeuanganService {
 
     @Autowired
-    @Qualifier("TransaksiKeuanganJpaRepository")
-    private TransaksiKeuanganJpaRepository mTransaksiKeuanganJpaRepository;
+    private static TransaksiKeuanganJpaRepository transaksiKeuanganJpaRepository;
 
     @Autowired
     private AkunJpaRepository akunJpaRepository;
@@ -31,46 +28,48 @@ public class TransaksiKeuanganService {
     @Autowired
     private KategoriTransaksiJpaRepository kategoriTransaksiJpaRepository;
 
+    // -------------------------------------------------------------
+    // Fungsi utama layanan
+    // -------------------------------------------------------------
     public TransaksiKeuangan getTransaksiKeuangan(Long id) {
-        return mTransaksiKeuanganJpaRepository.findById(id).orElse(null);
+        return transaksiKeuanganJpaRepository.findById(id).orElse(null);
     }
 
     public List<TransaksiKeuangan> getTransaksiKeuangansByPengguna(Integer idPengguna) {
-        return mTransaksiKeuanganJpaRepository
+        return transaksiKeuanganJpaRepository
                 .findByPenggunaIdPenggunaOrderByTanggalTransaksiDesc(idPengguna);
     }
 
     public List<TransaksiKeuangan> getTransaksiKeuangansByTipe(Integer idPengguna, String tipeTransaksi) {
-        return mTransaksiKeuanganJpaRepository
+        return transaksiKeuanganJpaRepository
                 .findByPenggunaIdPenggunaAndTipeTransaksiOrderByTanggalTransaksiDesc(idPengguna, tipeTransaksi);
     }
 
     public List<TransaksiKeuangan> getTransaksiKeuangansByPeriode(
             Integer idPengguna, LocalDateTime startDate, LocalDateTime endDate) {
-        return mTransaksiKeuanganJpaRepository
+        return transaksiKeuanganJpaRepository
                 .findByPenggunaIdPenggunaAndTanggalTransaksiBetweenOrderByTanggalTransaksiDesc(
                         idPengguna, startDate, endDate);
     }
 
     public List<TransaksiKeuangan> getTransaksiKeuangansByBulanTahun(
             Integer idPengguna, Integer month, Integer year) {
-        return mTransaksiKeuanganJpaRepository.findByPenggunaAndMonthYear(idPengguna, month, year);
+        return transaksiKeuanganJpaRepository.findByPenggunaAndMonthYear(idPengguna, month, year);
     }
 
     public List<TransaksiKeuangan> getTransaksiKeuangansByAkun(Integer idPengguna, Integer idAkun) {
-        return mTransaksiKeuanganJpaRepository
+        return transaksiKeuanganJpaRepository
                 .findByPenggunaIdPenggunaAndAkunIdAkunOrderByTanggalTransaksiDesc(idPengguna, idAkun);
     }
 
     public List<TransaksiKeuangan> getTransaksiKeuangansByKategori(Integer idPengguna, Integer idKategori) {
-        return mTransaksiKeuanganJpaRepository
+        return transaksiKeuanganJpaRepository
                 .findByPenggunaIdPenggunaAndKategoriIdKategoriOrderByTanggalTransaksiDesc(idPengguna, idKategori);
     }
 
     public TransaksiKeuangan saveTransaksiKeuangan(TransaksiKeuangan transaksi) throws IOException {
         System.out.println(">>> Saving Transaksi Keuangan: " + transaksi);
 
-        // Set timestamp
         transaksi.setDibuatPada(LocalDateTime.now());
         transaksi.setDiperbaruiPada(LocalDateTime.now());
 
@@ -86,23 +85,19 @@ public class TransaksiKeuanganService {
             throw new IOException("Kategori transaksi harus dipilih!");
         }
 
-        // Ambil akun dari database
-        Optional<AkunKeuangan> akunDbOpt = akunJpaRepository.findById(akun.getIdAkun());
-        if (!akunDbOpt.isPresent()) {
-            throw new IOException("Akun dengan ID " + akun.getIdAkun() + " tidak ditemukan!");
-        }
-        akun = akunDbOpt.get();
+        // Ambil akun dari DB
+        AkunKeuangan finalAkun = akun;
+        akun = akunJpaRepository.findById(akun.getIdAkun())
+                .orElseThrow(() -> new IOException("Akun dengan ID " + finalAkun.getIdAkun() + " tidak ditemukan!"));
         transaksi.setAkun(akun);
 
-        // Ambil kategori dari database
-        Optional<KategoriTransaksi> kategoriDbOpt = kategoriTransaksiJpaRepository.findById(kategori.getIdKategori());
-        if (!kategoriDbOpt.isPresent()) {
-            throw new IOException("Kategori dengan ID " + kategori.getIdKategori() + " tidak ditemukan!");
-        }
-        kategori = kategoriDbOpt.get();
+        // Ambil kategori dari DB
+        KategoriTransaksi finalKategori = kategori;
+        kategori = kategoriTransaksiJpaRepository.findById(kategori.getIdKategori())
+                .orElseThrow(() -> new IOException("Kategori dengan ID " + finalKategori.getIdKategori() + " tidak ditemukan!"));
         transaksi.setKategori(kategori);
 
-        // Validasi tipe transaksi sesuai dengan kategori
+        // Validasi tipe transaksi
         if (!transaksi.getTipeTransaksi().equalsIgnoreCase(kategori.getTipeKategori())) {
             throw new IOException("Tipe transaksi " + transaksi.getTipeTransaksi() +
                     " tidak sesuai dengan kategori " + kategori.getTipeKategori());
@@ -114,7 +109,7 @@ public class TransaksiKeuanganService {
         }
 
         // Simpan transaksi
-        TransaksiKeuangan savedTransaksi = mTransaksiKeuanganJpaRepository.save(transaksi);
+        TransaksiKeuangan savedTransaksi = transaksiKeuanganJpaRepository.save(transaksi);
 
         // Update saldo akun
         updateSaldoAkun(akun, transaksi);
@@ -137,7 +132,7 @@ public class TransaksiKeuanganService {
     }
 
     public boolean updateTransaksiKeuangan(TransaksiKeuangan transaksiKeuangan) {
-        TransaksiKeuangan result = mTransaksiKeuanganJpaRepository
+        TransaksiKeuangan result = transaksiKeuanganJpaRepository
                 .findById(transaksiKeuangan.getIdTransaksi())
                 .orElse(null);
         if (result == null) return false;
@@ -162,23 +157,31 @@ public class TransaksiKeuanganService {
         }
 
         result.setDiperbaruiPada(LocalDateTime.now());
-        mTransaksiKeuanganJpaRepository.save(result);
+        transaksiKeuanganJpaRepository.save(result);
         return true;
     }
 
     public boolean deleteTransaksiKeuangan(Long id) {
-        TransaksiKeuangan result = mTransaksiKeuanganJpaRepository.findById(id).orElse(null);
+        TransaksiKeuangan result = transaksiKeuanganJpaRepository.findById(id).orElse(null);
         if (result == null) return false;
 
-        mTransaksiKeuanganJpaRepository.delete(result);
+        transaksiKeuanganJpaRepository.delete(result);
         return true;
     }
 
     public List<RekapLaporan> getRekapLaporanByPengguna(Integer idPengguna) {
-        return mTransaksiKeuanganJpaRepository.findRekapLaporanByPengguna(idPengguna);
+        return transaksiKeuanganJpaRepository.findRekapLaporanByPengguna(idPengguna);
     }
 
     public RekapLaporan getRekapLaporanByPenggunaAndPeriode(Integer idPengguna, String periode) {
-        return mTransaksiKeuanganJpaRepository.findRekapLaporanByPenggunaAndPeriode(idPengguna, periode);
+        return transaksiKeuanganJpaRepository.findRekapLaporanByPenggunaAndPeriode(idPengguna, periode);
+    }
+
+    public long getTotalPengguna() {
+        return transaksiKeuanganJpaRepository.countDistinctPengguna();
+    }
+
+    public static Double getTotalUangMasuk() {
+        return transaksiKeuanganJpaRepository.getTotalUangMasuk();
     }
 }

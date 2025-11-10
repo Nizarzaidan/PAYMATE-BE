@@ -25,9 +25,6 @@ public class Tagihan {
     @Column(name = "catatan", nullable = false)
     private String catatan;
 
-    @Column(name = "catatan", nullable = false)
-    private String catatan;
-
     @Column(name = "tanggal_jatuh_tempo", nullable = false)
     private LocalDate tanggalJatuhTempo;
 

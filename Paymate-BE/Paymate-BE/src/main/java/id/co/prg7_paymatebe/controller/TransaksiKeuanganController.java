@@ -13,9 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/transaksi-keuangan")
 public class TransaksiKeuanganController {
@@ -130,5 +132,10 @@ public class TransaksiKeuanganController {
                 ? ResponseEntity.ok(rekap)
                 : ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new Result(404, "Data laporan tidak ditemukan untuk periode " + periode));
+    }
+
+    @GetMapping("/total-pengguna")
+    public long getTotalPengguna() {
+        return transaksiService.getTotalPengguna();
     }
 }
